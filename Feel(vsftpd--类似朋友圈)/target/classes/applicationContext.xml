@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- spring中声明事务功能会自动提交，回滚事务，不需要程序员编辑事务,默认使用单例设计模式-->
+<!-- 使用自动注入后，spring对实例化对象的级别会非常高 -->
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:tx="http://www.springframework.org/schema/tx"
+    xmlns:aop="http://www.springframework.org/schema/aop"
+    xsi:schemaLocation="
+        http://www.springframework.org/schema/beans 
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/tx
+        http://www.springframework.org/schema/tx/spring-tx.xsd
+        http://www.springframework.org/schema/aop
+        http://www.springframework.org/schema/aop/spring-aop.xsd"
+       default-autowire="byName">
+        <!-- 配置注解扫描器 (使注解生效)-->
+        <context:component-scan base-package="com.sprjjs.service.impl"></context:component-scan>
+        <!-- 使用cglib动态代理 -->
+       <aop:aspectj-autoproxy proxy-target-class="true"></aop:aspectj-autoproxy>
+       <!-- 加载外部properties文件 -->
+       <context:property-placeholder location="classpath:jdbc.properties,classpath:ftpclient.properties"/>
+        <!-- 数据源:获取数据库连接(从外部properties文件加载) -->
+        <!-- id:类对象的标识 -->
+        <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName" value="${jdbc.driverClassName}"></property>
+        <property name="url" value="${jdbc.url}"></property>
+        <property name="username" value="${jdbc.username}"></property>
+        <property name="password" value="${jdbc.password}"></property>
+        </bean>
+        <!-- 配置注解扫描器 (使注解生效)-->
+        <context:component-scan base-package="com.sprjjs.service.impl"></context:component-scan>
+        <!-- 配置事务管理器 (需要连接数据库)基于通知的，必须有切点才行-->
+        <bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager" autowire="default">
+         <!-- 数据库连接信息来自 datasource(使用自动注入，使用property标签可以不写)-->
+        </bean>
+        <!-- 配置声明式事务(相当于通知类，在切面中引入) -->
+        <tx:advice id="txAdvive" transaction-manager="txManager">
+        <tx:attributes>
+        <!-- 对哪些方法进行事务控制(一般都是对service层实现类下的方法) -->
+        <tx:method name="user*" rollback-for="java.lang.Exception"/>
+        <tx:method name="check*" rollback-for="java.lang.Exception"/>
+        </tx:attributes>
+        </tx:advice>
+        <!-- 配置切面 (使用schema-based方式)-->
+        <aop:config>
+        <!-- 配置切点 (范围尽量设大点)-->
+        <aop:pointcut expression="execution(* com.sprjjs.service.impl.*.*(..))" id="myPointcut"/>
+        <!-- 引入通知类 -->
+        <aop:advisor advice-ref="txAdvive" pointcut-ref="myPointcut"/>
+        </aop:config>
+        <!-- 创建SqlSessionFactory对象 -->
+        <!--id不能起名sqlSessionFactory的原因：因为org.mybatis.spring.mapper.MapperScannerConfigurer
+            类中有sqlSessionFactory该属性，然后会自动注入，导致加载不到properties文件-->
+        <bean id="factory" class="org.mybatis.spring.SqlSessionFactoryBean" autowire="default">
+        <!-- 数据库连接信息来自 datasource(使用自动注入，使用property标签可以不写)-->
+        <!-- 给某个包起别名 -->
+        <property name="typeAliasesPackage" value="com.sprjjs.pojo"></property>
+        </bean>
+        <!--扫描器：相当于mybatis.xml中mapper标签下的子标签package,
+           扫描com.sprjjs.mapper包后会给相对应的接口创建对象-->
+        <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.sprjjs.mapper"></property>
+        <!-- 和 factory 产生关系 -->
+        <!--需要将属性改为sqlSessionFactoryBeanName且设值注入，一定不能使用ref属性，否则加载会加载不到properties文件 -->
+        <property name="sqlSessionFactoryBeanName" value="factory"></property>
+        </bean>
+</beans>
