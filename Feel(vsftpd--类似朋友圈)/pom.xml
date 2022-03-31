@@ -10,7 +10,7 @@
   	<jsp-version>2.2</jsp-version>
   	<jstl-version>1.2</jstl-version>
   	<tomcat-version>2.2</tomcat-version>
-  	<spring-version>4.1.6.RELEASE</spring-version>
+  	<spring-version>5.3.18</spring-version>
   	<springmvc-version>4.1.6.RELEASE</springmvc-version>
   	<springjdbc-version>4.1.6.RELEASE</springjdbc-version>
 	<aspectjweaver-version>1.8.6</aspectjweaver-version>
