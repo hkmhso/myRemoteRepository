@@ -20,7 +20,7 @@
 	<mysql-connector-java-version>5.1.38</mysql-connector-java-version>
 	<jackson-version>2.4.1</jackson-version>
 	<commons-fileupload-version>1.3.1</commons-fileupload-version>
-	<ftpclient-version>3.3</ftpclient-version>
+	<ftpclient-version>3.9.0</ftpclient-version>
 	<json-simple-version>1.1</json-simple-version>
   </properties>
   <!-- <dependencyManagement>相当于将所有依赖的jar设为私有型，子类不能继承<groupId>和<artifactId>，当版本号可以继承版本号 -->
